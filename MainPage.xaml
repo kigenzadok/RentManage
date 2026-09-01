@@ -1,0 +1,66 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:RentManage.Models"
+             x:Class="RentManage.MainPage"
+             Title="RentManage (Local DB)">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="15">
+
+            <!-- Input Form -->
+            <Label x:Name="FormHeaderLabel" Text="Add New Tenant" FontSize="20" FontAttributes="Bold"/>
+
+            <Entry x:Name="NameEntry" Placeholder="Full Name" />
+            <Entry x:Name="PhoneEntry" Placeholder="Phone Number" Keyboard="Telephone" />
+            <Entry x:Name="UnitEntry" Placeholder="Unit Number (e.g. A12)" />
+            <Entry x:Name="RentEntry" Placeholder="Monthly Rent" Keyboard="Numeric" />
+
+            <Grid ColumnDefinitions="*,*">
+                <Button Grid.Column="0" x:Name="SaveButton" Text="Save Tenant" Clicked="OnSaveTenantClicked" BackgroundColor="#2B0B98" TextColor="White" Margin="0,0,5,0" />
+                <Button Grid.Column="1" x:Name="CancelButton" Text="Cancel Edit" Clicked="OnCancelEditClicked" BackgroundColor="Gray" TextColor="White" IsVisible="False" Margin="5,0,0,0" />
+            </Grid>
+
+            <BoxView HeightRequest="1" Color="Gray" Margin="0,10" />
+
+            <!-- Tenant List & Search Header -->
+            <Label Text="Registered Tenants" FontSize="20" FontAttributes="Bold"/>
+
+            <SearchBar x:Name="TenantSearchBar" Placeholder="Search by name or unit..." TextChanged="OnSearchBarTextChanged" />
+
+            <CollectionView x:Name="TenantsListView" HeightRequest="300">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:Tenant">
+                        <SwipeView>
+                            <!-- Right Swipe Action: Delete -->
+                            <SwipeView.RightItems>
+                                <SwipeItems>
+                                    <SwipeItem Text="Delete" 
+                                               BackgroundColor="Red" 
+                                               Invoked="OnDeleteTenantInvoked" 
+                                               CommandParameter="{Binding .}" />
+                                    <SwipeItem Text="Edit" 
+                                               BackgroundColor="Orange" 
+                                               Invoked="OnEditTenantInvoked" 
+                                               CommandParameter="{Binding .}" />
+                                </SwipeItems>
+                            </SwipeView.RightItems>
+
+                            <!-- List Item Card -->
+                            <Grid ColumnDefinitions="*, Auto" Padding="10" BackgroundColor="#F5F5F5" Margin="0,4">
+                                <VerticalStackLayout Grid.Column="0">
+                                    <Label Text="{Binding FullName}" FontAttributes="Bold" FontSize="16" TextColor="Black" />
+                                    <Label Text="{Binding UnitNumber, StringFormat='Unit: {0}'}" FontSize="12" TextColor="Gray"/>
+                                    <Label Text="{Binding Phone, StringFormat='Phone: {0}'}" FontSize="12" TextColor="Gray"/>
+                                </VerticalStackLayout>
+                                <Label Grid.Column="1" Text="{Binding MonthlyRent, StringFormat='${0:F2}'}" VerticalOptions="Center" FontAttributes="Bold" TextColor="Green"/>
+                            </Grid>
+                        </SwipeView>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

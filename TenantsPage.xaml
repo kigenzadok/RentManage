@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:RentManage.Models"
+             x:Class="RentManage.TenantsPage"
+             Title="Register Tenant">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="12">
+
+            <Label Text="Register New Tenant" FontSize="20" FontAttributes="Bold"/>
+
+            <Entry x:Name="FullNameEntry" Placeholder="Full Name" />
+            <Entry x:Name="PhoneEntry" Placeholder="Phone Number" Keyboard="Telephone" />
+            <Entry x:Name="EmailEntry" Placeholder="Email Address" Keyboard="Email" />
+
+            <Label Text="Assign Available Unit:" FontAttributes="Bold" Margin="0,5,0,0"/>
+            <Picker x:Name="VacantUnitsPicker" Title="Select Unit" ItemDisplayBinding="{Binding UnitNumber}" />
+
+            <Button Text="Register Tenant" Clicked="OnRegisterTenantClicked" BackgroundColor="#2B0B98" TextColor="White" Margin="0,10,0,0"/>
+
+            <BoxView HeightRequest="1" Color="Gray" Margin="0,10"/>
+
+            <Label Text="Active Tenants" FontSize="18" FontAttributes="Bold"/>
+            <CollectionView x:Name="TenantsListView" HeightRequest="250">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:Tenant">
+                        <Grid ColumnDefinitions="*,Auto" Padding="10" BackgroundColor="#F5F5F5" Margin="0,3">
+                            <VerticalStackLayout Grid.Column="0">
+                                <Label Text="{Binding FullName}" FontAttributes="Bold" TextColor="Black"/>
+                                <Label Text="{Binding Phone, StringFormat='Phone: {0}'}" FontSize="12" TextColor="Gray"/>
+                            </VerticalStackLayout>
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
