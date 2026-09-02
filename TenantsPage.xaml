@@ -3,38 +3,107 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:models="clr-namespace:RentManage.Models"
              x:Class="RentManage.TenantsPage"
-             Title="Register Tenant">
+             Title="Tenants"
+             BackgroundColor="#F8FAFC">
 
-    <ScrollView>
-        <VerticalStackLayout Padding="20" Spacing="12">
+    <Grid>
+        <!-- Main Content -->
+        <Grid RowDefinitions="Auto, *">
 
-            <Label Text="Register New Tenant" FontSize="20" FontAttributes="Bold"/>
+            <!-- Toggleable Form Card -->
+            <Border x:Name="AddFormCard" 
+                    Grid.Row="0" 
+                    Margin="16,16,16,8" 
+                    Padding="16" 
+                    StrokeShape="RoundRectangle 16" 
+                    StrokeThickness="0" 
+                    BackgroundColor="White"
+                    IsVisible="False">
+                <Border.Shadow>
+                    <Shadow Brush="Black" Offset="0,4" Radius="8" Opacity="0.08" />
+                </Border.Shadow>
 
-            <Entry x:Name="FullNameEntry" Placeholder="Full Name" />
-            <Entry x:Name="PhoneEntry" Placeholder="Phone Number" Keyboard="Telephone" />
-            <Entry x:Name="EmailEntry" Placeholder="Email Address" Keyboard="Email" />
+                <VerticalStackLayout Spacing="10">
+                    <Grid ColumnDefinitions="*, Auto">
+                        <Label Text="Tenant Onboarding" FontSize="18" FontAttributes="Bold" TextColor="#0F172A" VerticalOptions="Center"/>
+                        <Button Text="✕" Clicked="OnToggleAddFormClicked" BackgroundColor="Transparent" TextColor="#64748B" FontSize="16" HeightRequest="30" WidthRequest="30" Padding="0"/>
+                    </Grid>
 
-            <Label Text="Assign Available Unit:" FontAttributes="Bold" Margin="0,5,0,0"/>
-            <Picker x:Name="VacantUnitsPicker" Title="Select Unit" ItemDisplayBinding="{Binding UnitNumber}" />
+                    <Border StrokeShape="RoundRectangle 8" Stroke="#E2E8F0" Padding="10,0" BackgroundColor="#F8FAFC">
+                        <Entry x:Name="FullNameEntry" Placeholder="Full Name" />
+                    </Border>
 
-            <Button Text="Register Tenant" Clicked="OnRegisterTenantClicked" BackgroundColor="#2B0B98" TextColor="White" Margin="0,10,0,0"/>
+                    <Border StrokeShape="RoundRectangle 8" Stroke="#E2E8F0" Padding="10,0" BackgroundColor="#F8FAFC">
+                        <Entry x:Name="PhoneEntry" Placeholder="Phone Number" Keyboard="Telephone" />
+                    </Border>
 
-            <BoxView HeightRequest="1" Color="Gray" Margin="0,10"/>
+                    <Border StrokeShape="RoundRectangle 8" Stroke="#E2E8F0" Padding="10,0" BackgroundColor="#F8FAFC">
+                        <Entry x:Name="EmailEntry" Placeholder="Email Address" Keyboard="Email" />
+                    </Border>
 
-            <Label Text="Active Tenants" FontSize="18" FontAttributes="Bold"/>
-            <CollectionView x:Name="TenantsListView" HeightRequest="250">
-                <CollectionView.ItemTemplate>
-                    <DataTemplate x:DataType="models:Tenant">
-                        <Grid ColumnDefinitions="*,Auto" Padding="10" BackgroundColor="#F5F5F5" Margin="0,3">
-                            <VerticalStackLayout Grid.Column="0">
-                                <Label Text="{Binding FullName}" FontAttributes="Bold" TextColor="Black"/>
-                                <Label Text="{Binding Phone, StringFormat='Phone: {0}'}" FontSize="12" TextColor="Gray"/>
-                            </VerticalStackLayout>
-                        </Grid>
-                    </DataTemplate>
-                </CollectionView.ItemTemplate>
-            </CollectionView>
+                    <Label Text="Assign Unit" FontSize="12" FontAttributes="Bold" TextColor="#64748B"/>
+                    <Border StrokeShape="RoundRectangle 8" Stroke="#E2E8F0" Padding="10,0" BackgroundColor="#F8FAFC">
+                        <Picker x:Name="VacantUnitsPicker" Title="Select Unit" ItemDisplayBinding="{Binding UnitNumber}" TextColor="#0F172A" />
+                    </Border>
 
-        </VerticalStackLayout>
-    </ScrollView>
+                    <Button Text="Register Tenant" Clicked="OnRegisterTenantClicked" Margin="0,4,0,0" />
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Roster List -->
+            <Grid Grid.Row="1" RowDefinitions="Auto, *" Margin="16,8,16,16">
+                <Label Grid.Row="0" Text="Monthly Payment Reminders" FontSize="16" FontAttributes="Bold" TextColor="#0F172A" Margin="4,0,0,8"/>
+
+                <CollectionView Grid.Row="1" x:Name="TenantsListView">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="models:Tenant">
+                            <Border Margin="0,0,0,10" Padding="14" StrokeShape="RoundRectangle 12" StrokeThickness="0" BackgroundColor="White">
+                                <Border.Shadow>
+                                    <Shadow Brush="Black" Offset="0,2" Radius="4" Opacity="0.04" />
+                                </Border.Shadow>
+
+                                <Grid ColumnDefinitions="*, Auto" RowDefinitions="Auto, Auto">
+                                    <VerticalStackLayout Grid.Row="0" Grid.Column="0" Spacing="2">
+                                        <Label Text="{Binding FullName}" FontAttributes="Bold" FontSize="15" TextColor="#0F172A" />
+                                        <Label Text="{Binding UnitNumber, StringFormat='Unit: {0}'}" FontSize="12" TextColor="#64748B" />
+                                    </VerticalStackLayout>
+
+                                    <Border Grid.Row="0" Grid.RowSpan="2" Grid.Column="1" 
+                                            StrokeShape="RoundRectangle 20" 
+                                            BackgroundColor="{Binding PaymentStatusBgColor}" 
+                                            Padding="10,4" VerticalOptions="Center">
+                                        <Label Text="{Binding PaymentStatusText}" 
+                                               FontSize="11" 
+                                               FontAttributes="Bold" 
+                                               TextColor="{Binding PaymentStatusColor}" />
+                                    </Border>
+
+                                    <Label Grid.Row="1" Grid.Column="0" Text="{Binding Phone, StringFormat='📞 {0}'}" FontSize="11" TextColor="#94A3B8" Margin="0,4,0,0"/>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </Grid>
+        </Grid>
+
+        <!-- Floating Action Button -->
+        <Button x:Name="FabButton"
+                Text="+"
+                FontSize="28"
+                FontAttributes="Bold"
+                TextColor="White"
+                BackgroundColor="#4F46E5"
+                CornerRadius="28"
+                HeightRequest="56"
+                WidthRequest="56"
+                HorizontalOptions="End"
+                VerticalOptions="End"
+                Margin="0,0,20,24"
+                Clicked="OnToggleAddFormClicked">
+            <Button.Shadow>
+                <Shadow Brush="#4F46E5" Offset="0,4" Radius="8" Opacity="0.4" />
+            </Button.Shadow>
+        </Button>
+    </Grid>
 </ContentPage>

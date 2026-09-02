@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="RentManage.AddEditItemPage"
+             BackgroundColor="#80000000">
+    <!-- Semi-transparent backdrop -->
+
+    <Border VerticalOptions="Center" 
+            HorizontalOptions="Center" 
+            WidthRequest="340" 
+            Padding="20" 
+            StrokeShape="RoundRectangle 16" 
+            BackgroundColor="White" 
+            StrokeThickness="0">
+
+        <Border.Shadow>
+            <Shadow Brush="Black" Offset="0,4" Radius="10" Opacity="0.15" />
+        </Border.Shadow>
+
+        <VerticalStackLayout Spacing="12">
+            <!-- Header -->
+            <Grid ColumnDefinitions="*, Auto">
+                <Label x:Name="TitleLabel" Text="Add Item" FontSize="18" FontAttributes="Bold" TextColor="#0F172A" VerticalOptions="Center"/>
+                <Button Text="✕" Clicked="OnCloseClicked" BackgroundColor="Transparent" TextColor="#64748B" FontSize="16" Padding="0" HeightRequest="30" WidthRequest="30"/>
+            </Grid>
+
+            <!-- Type Selector (Property, Unit, Tenant, Payment) -->
+            <Label Text="Category" FontSize="12" FontAttributes="Bold" TextColor="#64748B" />
+            <Border StrokeShape="RoundRectangle 8" Stroke="#E2E8F0" Padding="10,0" BackgroundColor="#F8FAFC">
+                <Picker x:Name="ItemTypePicker" SelectedIndexChanged="OnItemTypeChanged" TextColor="#0F172A">
+                    <Picker.ItemsSource>
+                        <x:Array Type="{x:Type x:String}">
+                            <x:String>Property</x:String>
+                            <x:String>Unit</x:String>
+                            <x:String>Tenant</x:String>
+                            <x:String>Payment</x:String>
+                        </x:Array>
+                    </Picker.ItemsSource>
+                </Picker>
+            </Border>
+
+            <!-- Dynamic Form Fields -->
+
+            <!-- 1. Property Section -->
+            <VerticalStackLayout x:Name="PropertyFields" Spacing="10" IsVisible="False">
+                <Border StrokeShape="RoundRectangle 8" Stroke="#E2E8F0" Padding="10,0" BackgroundColor="#F8FAFC">
+                    <Entry x:Name="PropertyNameEntry" Placeholder="Property Name" />
+                </Border>
+                <Border StrokeShape="RoundRectangle 8" Stroke="#E2E8F0" Padding="10,0" BackgroundColor="#F8FAFC">
+                    <Entry x:Name="PropertyAddressEntry" Placeholder="Address" />
+                </Border>
+            </VerticalStackLayout>
+
+            <!-- 2. Unit Section -->
+            <VerticalStackLayout x:Name="UnitFields" Spacing="10" IsVisible="False">
+                <Border StrokeShape="RoundRectangle 8" Stroke="#E2E8F0" Padding="10,0" BackgroundColor="#F8FAFC">
+                    <Picker x:Name="PropertyPicker" Title="Select Property" ItemDisplayBinding="{Binding Name}" TextColor="#0F172A" />
+                </Border>
+                <Border StrokeShape="RoundRectangle 8" Stroke="#E2E8F0" Padding="10,0" BackgroundColor="#F8FAFC">
+                    <Entry x:Name="UnitNumberEntry" Placeholder="Unit Number (e.g. A1)" />
+                </Border>
+                <Border StrokeShape="RoundRectangle 8" Stroke="#E2E8F0" Padding="10,0" BackgroundColor="#F8FAFC">
+                    <Entry x:Name="MonthlyRentEntry" Placeholder="Monthly Rent ($)" Keyboard="Numeric" />
+                </Border>
+            </VerticalStackLayout>
+
+            <!-- 3. Tenant Section -->
+            <VerticalStackLayout x:Name="TenantFields" Spacing="10" IsVisible="False">
+                <Border StrokeShape="RoundRectangle 8" Stroke="#E2E8F0" Padding="10,0" BackgroundColor="#F8FAFC">
+                    <Entry x:Name="TenantNameEntry" Placeholder="Full Name" />
+                </Border>
+                <Border StrokeShape="RoundRectangle 8" Stroke="#E2E8F0" Padding="10,0" BackgroundColor="#F8FAFC">
+                    <Entry x:Name="TenantPhoneEntry" Placeholder="Phone Number" Keyboard="Telephone" />
+                </Border>
+                <Border StrokeShape="RoundRectangle 8" Stroke="#E2E8F0" Padding="10,0" BackgroundColor="#F8FAFC">
+                    <Entry x:Name="TenantEmailEntry" Placeholder="Email Address" Keyboard="Email" />
+                </Border>
+                <Border StrokeShape="RoundRectangle 8" Stroke="#E2E8F0" Padding="10,0" BackgroundColor="#F8FAFC">
+                    <Picker x:Name="VacantUnitsPicker" Title="Assign Unit" ItemDisplayBinding="{Binding UnitNumber}" TextColor="#0F172A" />
+                </Border>
+            </VerticalStackLayout>
+
+            <!-- 4. Payment Section -->
+            <VerticalStackLayout x:Name="PaymentFields" Spacing="10" IsVisible="False">
+                <Border StrokeShape="RoundRectangle 8" Stroke="#E2E8F0" Padding="10,0" BackgroundColor="#F8FAFC">
+                    <Picker x:Name="TenantPicker" Title="Select Tenant" ItemDisplayBinding="{Binding FullName}" TextColor="#0F172A" />
+                </Border>
+                <Border StrokeShape="RoundRectangle 8" Stroke="#E2E8F0" Padding="10,0" BackgroundColor="#F8FAFC">
+                    <Entry x:Name="PaymentAmountEntry" Placeholder="Amount Paid ($)" Keyboard="Numeric" />
+                </Border>
+                <Border StrokeShape="RoundRectangle 8" Stroke="#E2E8F0" Padding="10,0" BackgroundColor="#F8FAFC">
+                    <Picker x:Name="MethodPicker" Title="Payment Method" TextColor="#0F172A">
+                        <Picker.ItemsSource>
+                            <x:Array Type="{x:Type x:String}">
+                                <x:String>Cash</x:String>
+                                <x:String>Bank Transfer</x:String>
+                                <x:String>Mobile Money (M-Pesa)</x:String>
+                                <x:String>Credit/Debit Card</x:String>
+                            </x:Array>
+                        </Picker.ItemsSource>
+                    </Picker>
+                </Border>
+            </VerticalStackLayout>
+
+            <!-- Action Buttons -->
+            <Button Text="Save" Clicked="OnSubmitClicked" Margin="0,8,0,0" BackgroundColor="#4F46E5" TextColor="White" HeightRequest="44" CornerRadius="8"/>
+        </VerticalStackLayout>
+    </Border>
+</ContentPage>

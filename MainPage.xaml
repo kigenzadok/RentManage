@@ -1,66 +1,94 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:models="clr-namespace:RentManage.Models"
              x:Class="RentManage.MainPage"
-             Title="RentManage (Local DB)">
+             Title="Dashboard"
+             BackgroundColor="#F8FAFC">
 
     <ScrollView>
-        <VerticalStackLayout Padding="20" Spacing="15">
+        <VerticalStackLayout Padding="20" Spacing="20">
 
-            <!-- Input Form -->
-            <Label x:Name="FormHeaderLabel" Text="Add New Tenant" FontSize="20" FontAttributes="Bold"/>
+            <!-- Greeting Header -->
+            <VerticalStackLayout Spacing="4">
+                <Label Text="Rental Overview" FontSize="24" FontAttributes="Bold" TextColor="#0F172A"/>
+                <Label Text="Here is the performance summary of your portfolio." FontSize="14" TextColor="#64748B"/>
+            </VerticalStackLayout>
 
-            <Entry x:Name="NameEntry" Placeholder="Full Name" />
-            <Entry x:Name="PhoneEntry" Placeholder="Phone Number" Keyboard="Telephone" />
-            <Entry x:Name="UnitEntry" Placeholder="Unit Number (e.g. A12)" />
-            <Entry x:Name="RentEntry" Placeholder="Monthly Rent" Keyboard="Numeric" />
+            <!-- Revenue Banner Card -->
+            <Border StrokeShape="RoundRectangle 16" StrokeThickness="0" BackgroundColor="#4F46E5" Padding="20">
+                <Border.Shadow>
+                    <Shadow Brush="#4F46E5" Offset="0,4" Radius="10" Opacity="0.3"/>
+                </Border.Shadow>
 
-            <Grid ColumnDefinitions="*,*">
-                <Button Grid.Column="0" x:Name="SaveButton" Text="Save Tenant" Clicked="OnSaveTenantClicked" BackgroundColor="#2B0B98" TextColor="White" Margin="0,0,5,0" />
-                <Button Grid.Column="1" x:Name="CancelButton" Text="Cancel Edit" Clicked="OnCancelEditClicked" BackgroundColor="Gray" TextColor="White" IsVisible="False" Margin="5,0,0,0" />
+                <Grid RowDefinitions="Auto, Auto" ColumnDefinitions="*, Auto">
+                    <VerticalStackLayout Grid.Row="0" Grid.Column="0" Spacing="4">
+                        <Label Text="Monthly Projected Income" TextColor="#C7D2FE" FontSize="13" FontAttributes="Bold"/>
+                        <Label x:Name="TotalRevenueLabel" Text="$0.00" TextColor="White" FontSize="28" FontAttributes="Bold"/>
+                    </VerticalStackLayout>
+
+                    <Border Grid.Row="0" Grid.Column="1" StrokeShape="RoundRectangle 12" BackgroundColor="#6366F1" Padding="12" VerticalOptions="Start">
+                        <Label Text="💰" FontSize="20" HorizontalOptions="Center"/>
+                    </Border>
+                </Grid>
+            </Border>
+
+            <!-- KPI Metric Grid (2x2) -->
+            <Grid ColumnDefinitions="*, *" RowDefinitions="Auto, Auto" ColumnSpacing="12" RowSpacing="12">
+
+                <!-- Properties Count -->
+                <Border Grid.Row="0" Grid.Column="0" StrokeShape="RoundRectangle 14" StrokeThickness="0" BackgroundColor="White" Padding="16">
+                    <Border.Shadow>
+                        <Shadow Brush="Black" Offset="0,2" Radius="6" Opacity="0.04"/>
+                    </Border.Shadow>
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="🏢 Properties" FontSize="12" FontAttributes="Bold" TextColor="#64748B"/>
+                        <Label x:Name="TotalPropertiesLabel" Text="0" FontSize="22" FontAttributes="Bold" TextColor="#0F172A"/>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Total Units -->
+                <Border Grid.Row="0" Grid.Column="1" StrokeShape="RoundRectangle 14" StrokeThickness="0" BackgroundColor="White" Padding="16">
+                    <Border.Shadow>
+                        <Shadow Brush="Black" Offset="0,2" Radius="6" Opacity="0.04"/>
+                    </Border.Shadow>
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="🔑 Total Units" FontSize="12" FontAttributes="Bold" TextColor="#64748B"/>
+                        <Label x:Name="TotalUnitsLabel" Text="0" FontSize="22" FontAttributes="Bold" TextColor="#0F172A"/>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Occupancy Rate -->
+                <Border Grid.Row="1" Grid.Column="0" StrokeShape="RoundRectangle 14" StrokeThickness="0" BackgroundColor="White" Padding="16">
+                    <Border.Shadow>
+                        <Shadow Brush="Black" Offset="0,2" Radius="6" Opacity="0.04"/>
+                    </Border.Shadow>
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="📊 Occupancy Rate" FontSize="12" FontAttributes="Bold" TextColor="#64748B"/>
+                        <Label x:Name="OccupancyRateLabel" Text="0%" FontSize="22" FontAttributes="Bold" TextColor="#059669"/>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Vacant Units -->
+                <Border Grid.Row="1" Grid.Column="1" StrokeShape="RoundRectangle 14" StrokeThickness="0" BackgroundColor="White" Padding="16">
+                    <Border.Shadow>
+                        <Shadow Brush="Black" Offset="0,2" Radius="6" Opacity="0.04"/>
+                    </Border.Shadow>
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="🚪 Vacant Units" FontSize="12" FontAttributes="Bold" TextColor="#64748B"/>
+                        <Label x:Name="VacantUnitsLabel" Text="0" FontSize="22" FontAttributes="Bold" TextColor="#D97706"/>
+                    </VerticalStackLayout>
+                </Border>
+
             </Grid>
 
-            <BoxView HeightRequest="1" Color="Gray" Margin="0,10" />
+            <!-- Quick Navigation Shortcuts -->
+            <Label Text="Quick Actions" FontSize="16" FontAttributes="Bold" TextColor="#0F172A" Margin="0,10,0,-5"/>
 
-            <!-- Tenant List & Search Header -->
-            <Label Text="Registered Tenants" FontSize="20" FontAttributes="Bold"/>
-
-            <SearchBar x:Name="TenantSearchBar" Placeholder="Search by name or unit..." TextChanged="OnSearchBarTextChanged" />
-
-            <CollectionView x:Name="TenantsListView" HeightRequest="300">
-                <CollectionView.ItemTemplate>
-                    <DataTemplate x:DataType="models:Tenant">
-                        <SwipeView>
-                            <!-- Right Swipe Action: Delete -->
-                            <SwipeView.RightItems>
-                                <SwipeItems>
-                                    <SwipeItem Text="Delete" 
-                                               BackgroundColor="Red" 
-                                               Invoked="OnDeleteTenantInvoked" 
-                                               CommandParameter="{Binding .}" />
-                                    <SwipeItem Text="Edit" 
-                                               BackgroundColor="Orange" 
-                                               Invoked="OnEditTenantInvoked" 
-                                               CommandParameter="{Binding .}" />
-                                </SwipeItems>
-                            </SwipeView.RightItems>
-
-                            <!-- List Item Card -->
-                            <Grid ColumnDefinitions="*, Auto" Padding="10" BackgroundColor="#F5F5F5" Margin="0,4">
-                                <VerticalStackLayout Grid.Column="0">
-                                    <Label Text="{Binding FullName}" FontAttributes="Bold" FontSize="16" TextColor="Black" />
-                                    <Label Text="{Binding UnitNumber, StringFormat='Unit: {0}'}" FontSize="12" TextColor="Gray"/>
-                                    <Label Text="{Binding Phone, StringFormat='Phone: {0}'}" FontSize="12" TextColor="Gray"/>
-                                </VerticalStackLayout>
-                                <Label Grid.Column="1" Text="{Binding MonthlyRent, StringFormat='${0:F2}'}" VerticalOptions="Center" FontAttributes="Bold" TextColor="Green"/>
-                            </Grid>
-                        </SwipeView>
-                    </DataTemplate>
-                </CollectionView.ItemTemplate>
-            </CollectionView>
+            <Grid ColumnDefinitions="*, *" ColumnSpacing="12">
+                <Button Grid.Column="0" Text="+ Register Tenant" Clicked="OnNavToTenantsClicked" BackgroundColor="#4F46E5" TextColor="White" HeightRequest="48"/>
+                <Button Grid.Column="1" Text="+ Add Property" Clicked="OnNavToPropertiesClicked" BackgroundColor="#1E293B" TextColor="White" HeightRequest="48"/>
+            </Grid>
 
         </VerticalStackLayout>
     </ScrollView>
-
 </ContentPage>

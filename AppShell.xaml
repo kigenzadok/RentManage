@@ -4,17 +4,26 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:local="clr-namespace:RentManage"
-    Title="RentManage">
+    Shell.FlyoutBehavior="Disabled"
+    Shell.TabBarBackgroundColor="White"
+    Shell.TabBarForegroundColor="#4F46E5"
+    Shell.TabBarUnselectedColor="#94A3B8"
+    Shell.TabBarTitleColor="#4F46E5">
 
     <TabBar>
-        <Tab Title="Properties" Icon="dotnet_bot.png">
-            <ShellContent ContentTemplate="{DataTemplate local:PropertiesPage}" />
+        <!-- 1. Dashboard -->
+        <Tab Title="Dashboard" Icon="icon_dashboard.png">
+            <ShellContent ContentTemplate="{DataTemplate local:MainPage}" Route="MainPage" />
         </Tab>
-        <Tab Title="Units" Icon="dotnet_bot.png">
-            <ShellContent ContentTemplate="{DataTemplate local:UnitsPage}" />
+
+        <!-- 2. Properties (Includes Units & Tenants as nested detail views) -->
+        <Tab Title="Properties" Icon="icon_properties.png">
+            <ShellContent ContentTemplate="{DataTemplate local:PropertiesPage}" Route="PropertiesPage" />
         </Tab>
-        <Tab Title="Register Tenant" Icon="dotnet_bot.png">
-            <ShellContent ContentTemplate="{DataTemplate local:TenantsPage}" />
+
+        <!-- 3. Payments -->
+        <Tab Title="Payments" Icon="icon_payments.png">
+            <ShellContent ContentTemplate="{DataTemplate local:PaymentsPage}" Route="PaymentsPage" />
         </Tab>
     </TabBar>
 

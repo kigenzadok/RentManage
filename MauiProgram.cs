@@ -35,6 +35,8 @@ public static class MauiProgram
         builder.Services.AddTransient<UnitsPage>();
         builder.Services.AddTransient<TenantsPage>();
         builder.Services.AddTransient<MainPage>();
+        builder.Services.AddTransient<PaymentsPage>();
+        builder.Services.AddSingleton<ReceiptService>();
 
 #if DEBUG
         builder.Logging.AddDebug();

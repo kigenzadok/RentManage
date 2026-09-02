@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:RentManage.Models"
+             x:Class="RentManage.PaymentsPage"
+             Title="Payments"
+             BackgroundColor="#F8FAFC">
+
+    <Grid>
+        <Grid RowDefinitions="Auto, Auto, *">
+
+            <!-- 1. Top Summary Cards Header -->
+            <Grid Grid.Row="0" ColumnDefinitions="*, *" ColumnSpacing="12" Margin="16,16,16,8">
+                <!-- Total Collected This Month -->
+                <Border Grid.Column="0" Padding="14" StrokeShape="RoundRectangle 12" StrokeThickness="0" BackgroundColor="White">
+                    <Border.Shadow>
+                        <Shadow Brush="Black" Offset="0,2" Radius="4" Opacity="0.04" />
+                    </Border.Shadow>
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="This Month" FontSize="12" TextColor="#64748B" FontAttributes="Bold"/>
+                        <Label x:Name="MonthlyTotalLabel" Text="$0.00" FontSize="20" FontAttributes="Bold" TextColor="#16A34A" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Total All-Time Revenue -->
+                <Border Grid.Column="1" Padding="14" StrokeShape="RoundRectangle 12" StrokeThickness="0" BackgroundColor="White">
+                    <Border.Shadow>
+                        <Shadow Brush="Black" Offset="0,2" Radius="4" Opacity="0.04" />
+                    </Border.Shadow>
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="Total Revenue" FontSize="12" TextColor="#64748B" FontAttributes="Bold"/>
+                        <Label x:Name="TotalRevenueLabel" Text="$0.00" FontSize="20" FontAttributes="Bold" TextColor="#4F46E5" />
+                    </VerticalStackLayout>
+                </Border>
+            </Grid>
+
+            <!-- 2. Record New Payment Card (Collapsible) -->
+            <Border x:Name="AddFormCard" 
+                    Grid.Row="1" 
+                    Margin="16,8,16,8" 
+                    Padding="16" 
+                    StrokeShape="RoundRectangle 16" 
+                    StrokeThickness="0" 
+                    BackgroundColor="White"
+                    IsVisible="False">
+                <Border.Shadow>
+                    <Shadow Brush="Black" Offset="0,4" Radius="8" Opacity="0.08" />
+                </Border.Shadow>
+
+                <VerticalStackLayout Spacing="10">
+                    <Grid ColumnDefinitions="*, Auto">
+                        <Label Text="Record Payment" FontSize="18" FontAttributes="Bold" TextColor="#0F172A" VerticalOptions="Center"/>
+                        <Button Text="✕" Clicked="OnToggleAddFormClicked" BackgroundColor="Transparent" TextColor="#64748B" FontSize="16" HeightRequest="30" WidthRequest="30" Padding="0"/>
+                    </Grid>
+
+                    <Border StrokeShape="RoundRectangle 8" Stroke="#E2E8F0" Padding="10,0" BackgroundColor="#F8FAFC">
+                        <Picker x:Name="TenantPicker" Title="Select Tenant" ItemDisplayBinding="{Binding Name}" TextColor="#0F172A" />
+                    </Border>
+
+                    <Border StrokeShape="RoundRectangle 8" Stroke="#E2E8F0" Padding="10,0" BackgroundColor="#F8FAFC">
+                        <Entry x:Name="AmountEntry" Placeholder="Amount ($)" Keyboard="Numeric" />
+                    </Border>
+
+                    <Border StrokeShape="RoundRectangle 8" Stroke="#E2E8F0" Padding="10,0" BackgroundColor="#F8FAFC">
+                        <Picker x:Name="MethodPicker" Title="Payment Method">
+                            <Picker.ItemsSource>
+                                <x:Array Type="{x:Type x:String}">
+                                    <x:String>M-Pesa</x:String>
+                                    <x:String>Bank Transfer</x:String>
+                                    <x:String>Cash</x:String>
+                                    <x:String>Cheque</x:String>
+                                </x:Array>
+                            </Picker.ItemsSource>
+                        </Picker>
+                    </Border>
+
+                    <Button Text="Save Payment" Clicked="OnSavePaymentClicked" BackgroundColor="#4F46E5" TextColor="White" Margin="0,4,0,0" />
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- 3. Transactions List -->
+            <Grid Grid.Row="2" RowDefinitions="Auto, *" Margin="16,8,16,16">
+                <Label Grid.Row="0" Text="Recent Transactions" FontSize="16" FontAttributes="Bold" TextColor="#0F172A" Margin="4,0,0,8"/>
+
+                <CollectionView Grid.Row="1" x:Name="PaymentsListView">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="models:Payment">
+                            <Border Margin="0,0,0,10" Padding="14" StrokeShape="RoundRectangle 12" StrokeThickness="0" BackgroundColor="White">
+                                <Border.Shadow>
+                                    <Shadow Brush="Black" Offset="0,2" Radius="4" Opacity="0.04" />
+                                </Border.Shadow>
+
+                                <VerticalStackLayout Spacing="10">
+                                    <Grid ColumnDefinitions="*, Auto">
+                                        <VerticalStackLayout Grid.Column="0" Spacing="2">
+                                            <Label Text="{Binding TenantName}" FontAttributes="Bold" FontSize="15" TextColor="#0F172A" />
+                                            <Label Text="{Binding Method, StringFormat='Method: {0}'}" FontSize="12" TextColor="#64748B" />
+                                            <Label Text="{Binding PaymentDate, StringFormat='{0:MMM dd, yyyy}'}" FontSize="11" TextColor="#94A3B8" />
+                                        </VerticalStackLayout>
+
+                                        <Label Grid.Column="1" 
+                                               Text="{Binding Amount, StringFormat='+${0:F2}'}" 
+                                               FontAttributes="Bold" 
+                                               FontSize="16" 
+                                               TextColor="#16A34A" 
+                                               VerticalOptions="Start" />
+                                    </Grid>
+
+                                    <!-- PDF Receipt Action Button -->
+                                    <Button Text="📄 Share PDF Receipt" 
+                                            Clicked="OnShareReceiptClicked" 
+                                            CommandParameter="{Binding .}" 
+                                            BackgroundColor="#EEF2FF" 
+                                            TextColor="#4F46E5" 
+                                            FontSize="12" 
+                                            HeightRequest="36" 
+                                            CornerRadius="8" />
+                                </VerticalStackLayout>
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </Grid>
+        </Grid>
+
+        <!-- Floating Action Button -->
+        <Button x:Name="FabButton"
+                Text="+"
+                FontSize="28"
+                FontAttributes="Bold"
+                TextColor="White"
+                BackgroundColor="#4F46E5"
+                CornerRadius="28"
+                HeightRequest="56"
+                WidthRequest="56"
+                HorizontalOptions="End"
+                VerticalOptions="End"
+                Margin="0,0,20,24"
+                Clicked="OnToggleAddFormClicked">
+            <Button.Shadow>
+                <Shadow Brush="#4F46E5" Offset="0,4" Radius="8" Opacity="0.4" />
+            </Button.Shadow>
+        </Button>
+    </Grid>
+</ContentPage>

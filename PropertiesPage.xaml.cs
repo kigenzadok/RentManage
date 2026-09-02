@@ -1,4 +1,4 @@
-using RentManage.Models;
+﻿using RentManage.Models;
 using RentManage.Services;
 
 namespace RentManage;
@@ -24,25 +24,27 @@ public partial class PropertiesPage : ContentPage
         PropertiesListView.ItemsSource = await _dbService.GetPropertiesAsync();
     }
 
-    private async void OnSavePropertyClicked(object sender, EventArgs e)
+    // Opens the unified modal page set specifically to "Property" mode
+    private async void OnToggleAddFormClicked(object sender, EventArgs e)
     {
-        if (string.IsNullOrWhiteSpace(PropertyNameEntry.Text))
+        await Navigation.PushModalAsync(new AddEditItemPage(_dbService, "Property"));
+    }
+
+    // Navigates to UnitsPage and passes the selected Property ID & Name
+    private async void OnViewUnitsClicked(object sender, EventArgs e)
+    {
+        if (sender is Button button && button.CommandParameter is Property selectedProperty)
         {
-            await DisplayAlert("Error", "Property Name is required.", "OK");
-            return;
+            await Shell.Current.GoToAsync($"{nameof(UnitsPage)}?PropertyId={selectedProperty.Id}&PropertyName={Uri.EscapeDataString(selectedProperty.Name)}");
         }
+    }
 
-        var property = new Property
+    // Navigates to TenantsPage and passes the selected Property ID & Name
+    private async void OnViewTenantsClicked(object sender, EventArgs e)
+    {
+        if (sender is Button button && button.CommandParameter is Property selectedProperty)
         {
-            Name = PropertyNameEntry.Text,
-            Address = PropertyAddressEntry.Text
-        };
-
-        await _dbService.SavePropertyAsync(property);
-
-        PropertyNameEntry.Text = string.Empty;
-        PropertyAddressEntry.Text = string.Empty;
-
-        await LoadPropertiesAsync();
+            await Shell.Current.GoToAsync($"{nameof(TenantsPage)}?PropertyId={selectedProperty.Id}&PropertyName={Uri.EscapeDataString(selectedProperty.Name)}");
+        }
     }
 }

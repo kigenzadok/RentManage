@@ -9,7 +9,7 @@ public class Tenant
     public int Id { get; set; }
 
     [Indexed]
-    public int UnitId { get; set; } // Foreign key linking to Unit
+    public int UnitId { get; set; }
 
     [NotNull]
     public string FullName { get; set; } = string.Empty;
@@ -19,10 +19,22 @@ public class Tenant
 
     public string Email { get; set; } = string.Empty;
 
-    // Direct property fields needed by MainPage UI
     public string UnitNumber { get; set; } = string.Empty;
 
     public decimal MonthlyRent { get; set; }
 
     public DateTime LeaseStartDate { get; set; } = DateTime.Now;
+
+    // --- Computed Properties for UI Reminders ---
+    [Ignore]
+    public bool IsRentPaidThisMonth { get; set; }
+
+    [Ignore]
+    public string PaymentStatusText => IsRentPaidThisMonth ? "Paid" : "Rent Overdue";
+
+    [Ignore]
+    public Color PaymentStatusColor => IsRentPaidThisMonth ? Color.FromArgb("#059669") : Color.FromArgb("#DC2626");
+
+    [Ignore]
+    public Color PaymentStatusBgColor => IsRentPaidThisMonth ? Color.FromArgb("#ECFDF5") : Color.FromArgb("#FEF2F2");
 }

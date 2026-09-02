@@ -1,11 +1,26 @@
-using RentManage.Models;
+﻿using RentManage.Models;
 using RentManage.Services;
 
 namespace RentManage;
 
+[QueryProperty(nameof(PropertyId), "PropertyId")]
+[QueryProperty(nameof(PropertyName), "PropertyName")]
 public partial class UnitsPage : ContentPage
 {
     private readonly LocalDbService _dbService;
+
+    public int PropertyId { get; set; }
+
+    private string _propertyName;
+    public string PropertyName
+    {
+        get => _propertyName;
+        set
+        {
+            _propertyName = Uri.UnescapeDataString(value ?? string.Empty);
+            OnPropertyChanged();
+        }
+    }
 
     public UnitsPage(LocalDbService dbService)
     {
@@ -16,47 +31,72 @@ public partial class UnitsPage : ContentPage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
-        await LoadDataAsync();
+
+        // Update page title dynamically
+        if (!string.IsNullOrEmpty(PropertyName))
+        {
+            Title = $"Units - {PropertyName}";
+        }
+
+        // Load units filtered by PropertyId
+        await LoadFilteredUnitsAsync();
     }
 
-    private async Task LoadDataAsync()
+    private async Task LoadFilteredUnitsAsync()
     {
-        PropertyPicker.ItemsSource = await _dbService.GetPropertiesAsync();
-
-        // Load vacant and occupied units
-        var vacant = await _dbService.GetVacantUnitsAsync();
-        UnitsListView.ItemsSource = vacant;
+        if (PropertyId > 0)
+        {
+            // Fetch units specific to this property
+            var allUnits = await _dbService.GetUnitsAsync();
+            var filteredUnits = allUnits.Where(u => u.PropertyId == PropertyId).ToList();
+            UnitsListView.ItemsSource = filteredUnits;
+        }
+        else
+        {
+            // Fallback: show all units if no PropertyId passed
+            UnitsListView.ItemsSource = await _dbService.GetUnitsAsync();
+        }
     }
-
-    private async void OnSaveUnitClicked(object sender, EventArgs e)
+    public void OnToggleAddFormClicked(object sender, EventArgs e)
+    {
+        AddFormCard.IsVisible = !AddFormCard.IsVisible;
+    }
+    public async void OnSaveUnitClicked(object sender, EventArgs e)
     {
         if (PropertyPicker.SelectedItem is not Property selectedProperty)
         {
-            await DisplayAlert("Error", "Please select a property.", "OK");
+            await DisplayAlert("Validation Error", "Please select a property.", "OK");
             return;
         }
 
         if (string.IsNullOrWhiteSpace(UnitNumberEntry.Text))
         {
-            await DisplayAlert("Error", "Unit Number is required.", "OK");
+            await DisplayAlert("Validation Error", "Please enter a unit number.", "OK");
             return;
         }
 
-        decimal.TryParse(MonthlyRentEntry.Text, out decimal rent);
+        if (!decimal.TryParse(MonthlyRentEntry.Text, out decimal rentAmount))
+        {
+            await DisplayAlert("Validation Error", "Please enter a valid rent amount.", "OK");
+            return;
+        }
 
-        var unit = new Unit
+        var newUnit = new Unit
         {
             PropertyId = selectedProperty.Id,
-            UnitNumber = UnitNumberEntry.Text,
-            MonthlyRent = rent,
+            UnitNumber = UnitNumberEntry.Text.Trim(),
+            MonthlyRent = rentAmount, // Updated to match Unit model (use Rent if named Rent in Unit.cs)
             Status = "Vacant"
         };
 
-        await _dbService.SaveUnitAsync(unit);
+        await _dbService.SaveUnitAsync(newUnit);
 
+        // Reset entries and hide form
         UnitNumberEntry.Text = string.Empty;
         MonthlyRentEntry.Text = string.Empty;
+        AddFormCard.IsVisible = false;
 
-        await LoadDataAsync();
+        // Refresh list using existing method name
+        await LoadFilteredUnitsAsync();
     }
 }

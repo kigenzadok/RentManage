@@ -18,6 +18,61 @@ public class LocalDbService
         await _dbConnection.CreateTableAsync<Property>();
         await _dbConnection.CreateTableAsync<Unit>();
         await _dbConnection.CreateTableAsync<Tenant>();
+        await _dbConnection.CreateTableAsync<Payment>();
+    }
+
+    // --- Property Operations ---
+    public async Task<List<Property>> GetPropertiesAsync()
+    {
+        await InitAsync();
+        return await _dbConnection!.Table<Property>().ToListAsync();
+    }
+
+    public async Task<int> SavePropertyAsync(Property property)
+    {
+        await InitAsync();
+        return property.Id != 0
+            ? await _dbConnection!.UpdateAsync(property)
+            : await _dbConnection!.InsertAsync(property);
+    }
+
+    public async Task<int> DeletePropertyAsync(Property property)
+    {
+        await InitAsync();
+        return await _dbConnection!.DeleteAsync(property);
+    }
+
+    // --- Unit Operations ---
+    public async Task<List<Unit>> GetUnitsAsync()
+    {
+        await InitAsync();
+        return await _dbConnection!.Table<Unit>().ToListAsync();
+    }
+
+    public async Task<List<Unit>> GetUnitsByPropertyAsync(int propertyId)
+    {
+        await InitAsync();
+        return await _dbConnection!.Table<Unit>().Where(u => u.PropertyId == propertyId).ToListAsync();
+    }
+
+    public async Task<List<Unit>> GetVacantUnitsAsync()
+    {
+        await InitAsync();
+        return await _dbConnection!.Table<Unit>().Where(u => u.Status == "Vacant").ToListAsync();
+    }
+
+    public async Task<int> SaveUnitAsync(Unit unit)
+    {
+        await InitAsync();
+        return unit.Id != 0
+            ? await _dbConnection!.UpdateAsync(unit)
+            : await _dbConnection!.InsertAsync(unit);
+    }
+
+    public async Task<int> DeleteUnitAsync(Unit unit)
+    {
+        await InitAsync();
+        return await _dbConnection!.DeleteAsync(unit);
     }
 
     // --- Tenant Operations ---
@@ -54,38 +109,6 @@ public class LocalDbService
         return await _dbConnection!.DeleteAsync(tenant);
     }
 
-    // --- Property CRUD ---
-    public async Task<List<Property>> GetPropertiesAsync()
-    {
-        await InitAsync();
-        return await _dbConnection!.Table<Property>().ToListAsync();
-    }
-
-    public async Task<int> SavePropertyAsync(Property property)
-    {
-        await InitAsync();
-        return property.Id != 0 ? await _dbConnection!.UpdateAsync(property) : await _dbConnection!.InsertAsync(property);
-    }
-
-    // --- Unit CRUD ---
-    public async Task<List<Unit>> GetUnitsByPropertyAsync(int propertyId)
-    {
-        await InitAsync();
-        return await _dbConnection!.Table<Unit>().Where(u => u.PropertyId == propertyId).ToListAsync();
-    }
-
-    public async Task<List<Unit>> GetVacantUnitsAsync()
-    {
-        await InitAsync();
-        return await _dbConnection!.Table<Unit>().Where(u => u.Status == "Vacant").ToListAsync();
-    }
-
-    public async Task<int> SaveUnitAsync(Unit unit)
-    {
-        await InitAsync();
-        return unit.Id != 0 ? await _dbConnection!.UpdateAsync(unit) : await _dbConnection!.InsertAsync(unit);
-    }
-
     public async Task<int> RegisterTenantAsync(Tenant tenant, int unitId)
     {
         await InitAsync();
@@ -101,5 +124,85 @@ public class LocalDbService
         }
 
         return result;
+    }
+
+    public async Task<List<Tenant>> GetTenantsWithPaymentStatusAsync()
+    {
+        await InitAsync();
+        var tenants = await _dbConnection!.Table<Tenant>().ToListAsync();
+
+        var currentMonthStart = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
+
+        var currentMonthPayments = await _dbConnection!.Table<Payment>()
+            .Where(p => p.PaymentDate >= currentMonthStart)
+            .ToListAsync();
+
+        var paidTenantIds = currentMonthPayments.Select(p => p.TenantId).ToHashSet();
+
+        foreach (var tenant in tenants)
+        {
+            tenant.IsRentPaidThisMonth = paidTenantIds.Contains(tenant.Id);
+        }
+
+        return tenants;
+    }
+
+    // --- Payment Operations ---
+    public async Task<List<Payment>> GetPaymentsAsync()
+    {
+        await InitAsync();
+        return await _dbConnection!.Table<Payment>().OrderByDescending(p => p.PaymentDate).ToListAsync();
+    }
+
+    public async Task<List<Payment>> GetPaymentsByTenantAsync(int tenantId)
+    {
+        await InitAsync();
+        return await _dbConnection!.Table<Payment>()
+            .Where(p => p.TenantId == tenantId)
+            .OrderByDescending(p => p.PaymentDate)
+            .ToListAsync();
+    }
+
+    public async Task<int> RecordPaymentAsync(Payment payment)
+    {
+        await InitAsync();
+        return await _dbConnection!.InsertAsync(payment);
+    }
+
+    public async Task<int> DeletePaymentAsync(Payment payment)
+    {
+        await InitAsync();
+        return await _dbConnection!.DeleteAsync(payment);
+    }
+
+    // --- Dashboard Analytics ---
+    public async Task<int> GetTotalPropertiesCountAsync()
+    {
+        await InitAsync();
+        return await _dbConnection!.Table<Property>().CountAsync();
+    }
+
+    public async Task<int> GetTotalUnitsCountAsync()
+    {
+        await InitAsync();
+        return await _dbConnection!.Table<Unit>().CountAsync();
+    }
+
+    public async Task<int> GetOccupiedUnitsCountAsync()
+    {
+        await InitAsync();
+        return await _dbConnection!.Table<Unit>().Where(u => u.Status == "Occupied").CountAsync();
+    }
+
+    public async Task<decimal> GetTotalMonthlyRevenueAsync()
+    {
+        await InitAsync();
+        var occupiedUnits = await _dbConnection!.Table<Unit>().Where(u => u.Status == "Occupied").ToListAsync();
+        return occupiedUnits.Sum(u => u.MonthlyRent);
+    }
+    public async Task<int> AddPaymentAsync(Payment payment)
+    {
+        await InitAsync();
+        return await _dbConnection.InsertAsync(payment);
     }
 }
