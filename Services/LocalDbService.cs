@@ -205,4 +205,43 @@ public class LocalDbService
         await InitAsync();
         return await _dbConnection.InsertAsync(payment);
     }
+    public async Task<List<UnitMonthlyStatus>> GetMonthlyUnitBreakdownAsync(int year, int month)
+    {
+        await InitAsync();
+
+        var units = await _dbConnection.Table<Unit>().ToListAsync();
+        var tenants = await _dbConnection.Table<Tenant>().ToListAsync();
+        var payments = await _dbConnection.Table<Payment>().ToListAsync();
+
+        var breakdown = new List<UnitMonthlyStatus>();
+
+        foreach (var unit in units)
+        {
+            // Find tenant assigned to this unit
+            var tenant = tenants.FirstOrDefault(t => t.UnitNumber == unit.UnitNumber);
+
+            // Find payment made for this unit in the specified month & year
+            var payment = payments.FirstOrDefault(p =>
+                p.TenantId == tenant?.Id &&
+                p.PaymentDate.Month == month &&
+                p.PaymentDate.Year == year);
+
+            bool isVacant = tenant == null || string.Equals(unit.Status, "Vacant", StringComparison.OrdinalIgnoreCase);
+
+            breakdown.Add(new UnitMonthlyStatus
+            {
+                UnitId = unit.Id,
+                UnitNumber = unit.UnitNumber,
+                TargetRent = unit.MonthlyRent,
+                MonthYearDisplay = new DateTime(year, month, 1).ToString("MMMM yyyy"),
+                IsVacant = isVacant,
+                TenantName = isVacant ? "No Tenant (Vacant)" : (tenant?.FullName ?? "Unknown"),
+                AmountPaid = payment?.AmountPaid ?? 0m,
+                PaymentMethod = payment?.PaymentMethod ?? "N/A",
+                PaymentDate = payment?.PaymentDate
+            });
+        }
+
+        return breakdown;
+    }
 }

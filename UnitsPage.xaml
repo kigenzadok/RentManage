@@ -28,7 +28,10 @@
                     </Grid>
 
                     <Border StrokeShape="RoundRectangle 8" Stroke="#E2E8F0" Padding="10,0" BackgroundColor="#F8FAFC">
-                        <Picker x:Name="PropertyPicker" Title="Select Property" ItemDisplayBinding="{Binding Name}" TextColor="#0F172A" />
+                        <Picker x:Name="PropertyPicker" 
+                        Title="Select Property" 
+                        ItemDisplayBinding="{Binding Name}" 
+                        TextColor="#0F172A" />
                     </Border>
 
                     <Border StrokeShape="RoundRectangle 8" Stroke="#E2E8F0" Padding="10,0" BackgroundColor="#F8FAFC">
