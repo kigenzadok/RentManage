@@ -38,8 +38,30 @@ public partial class UnitsPage : ContentPage
             Title = $"Units - {PropertyName}";
         }
 
-        // Load units filtered by PropertyId
+        // 1. Load properties first so picker has items
+        await LoadPropertiesAsync();
+
+        // 2. Load units filtered by PropertyId
         await LoadFilteredUnitsAsync();
+    }
+
+    private async Task LoadPropertiesAsync()
+    {
+        // Fetch properties from SQLite
+        var properties = await _dbService.GetPropertiesAsync();
+
+        // Bind to picker
+        PropertyPicker.ItemsSource = properties;
+
+        // Auto-select the property matching the passed PropertyId parameter
+        if (PropertyId > 0 && properties != null)
+        {
+            var currentProperty = properties.FirstOrDefault(p => p.Id == PropertyId);
+            if (currentProperty != null)
+            {
+                PropertyPicker.SelectedItem = currentProperty;
+            }
+        }
     }
 
     private async Task LoadFilteredUnitsAsync()
@@ -57,10 +79,12 @@ public partial class UnitsPage : ContentPage
             UnitsListView.ItemsSource = await _dbService.GetUnitsAsync();
         }
     }
+
     public void OnToggleAddFormClicked(object sender, EventArgs e)
     {
         AddFormCard.IsVisible = !AddFormCard.IsVisible;
     }
+
     public async void OnSaveUnitClicked(object sender, EventArgs e)
     {
         if (PropertyPicker.SelectedItem is not Property selectedProperty)
@@ -85,7 +109,7 @@ public partial class UnitsPage : ContentPage
         {
             PropertyId = selectedProperty.Id,
             UnitNumber = UnitNumberEntry.Text.Trim(),
-            MonthlyRent = rentAmount, // Updated to match Unit model (use Rent if named Rent in Unit.cs)
+            MonthlyRent = rentAmount,
             Status = "Vacant"
         };
 

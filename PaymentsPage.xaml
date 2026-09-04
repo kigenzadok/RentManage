@@ -7,7 +7,8 @@
              BackgroundColor="#F8FAFC">
 
     <Grid>
-        <Grid RowDefinitions="Auto, Auto, *">
+        <!-- Main Layout Stack -->
+        <Grid RowDefinitions="Auto, Auto, Auto, *">
 
             <!-- 1. Top Summary Cards Header -->
             <Grid Grid.Row="0" ColumnDefinitions="*, *" ColumnSpacing="12" Margin="16,16,16,8">
@@ -34,9 +35,29 @@
                 </Border>
             </Grid>
 
-            <!-- 2. Record New Payment Card (Collapsible) -->
+            <!-- 2. View Toggle Segment (Transactions vs Breakdown) -->
+            <Grid Grid.Row="1" ColumnDefinitions="*, *" ColumnSpacing="8" Margin="16,4,16,4">
+                <Button x:Name="BtnShowTransactions" 
+                        Text="Transactions" 
+                        BackgroundColor="#4F46E5" 
+                        TextColor="White" 
+                        CornerRadius="8" 
+                        HeightRequest="36"
+                        Clicked="OnShowTransactionsClicked" />
+
+                <Button x:Name="BtnShowBreakdown" 
+                        Grid.Column="1" 
+                        Text="Unit Breakdown" 
+                        BackgroundColor="#E2E8F0" 
+                        TextColor="#475569" 
+                        CornerRadius="8" 
+                        HeightRequest="36"
+                        Clicked="OnShowBreakdownClicked" />
+            </Grid>
+
+            <!-- 3. Record New Payment Card (Collapsible) -->
             <Border x:Name="AddFormCard" 
-                    Grid.Row="1" 
+                    Grid.Row="2" 
                     Margin="16,8,16,8" 
                     Padding="16" 
                     StrokeShape="RoundRectangle 16" 
@@ -54,7 +75,7 @@
                     </Grid>
 
                     <Border StrokeShape="RoundRectangle 8" Stroke="#E2E8F0" Padding="10,0" BackgroundColor="#F8FAFC">
-                        <Picker x:Name="TenantPicker" Title="Select Tenant" ItemDisplayBinding="{Binding Name}" TextColor="#0F172A" />
+                        <Picker x:Name="TenantPicker" Title="Select Tenant" ItemDisplayBinding="{Binding FullName}" TextColor="#0F172A" />
                     </Border>
 
                     <Border StrokeShape="RoundRectangle 8" Stroke="#E2E8F0" Padding="10,0" BackgroundColor="#F8FAFC">
@@ -78,8 +99,9 @@
                 </VerticalStackLayout>
             </Border>
 
-            <!-- 3. Transactions List -->
-            <Grid Grid.Row="2" RowDefinitions="Auto, *" Margin="16,8,16,16">
+            <!-- 4. Content Views (Grid Row 3) -->
+            <!-- 4A. Recent Transactions View -->
+            <Grid x:Name="TransactionsView" Grid.Row="3" RowDefinitions="Auto, *" Margin="16,8,16,16" IsVisible="True">
                 <Label Grid.Row="0" Text="Recent Transactions" FontSize="16" FontAttributes="Bold" TextColor="#0F172A" Margin="4,0,0,8"/>
 
                 <CollectionView Grid.Row="1" x:Name="PaymentsListView">
@@ -94,12 +116,12 @@
                                     <Grid ColumnDefinitions="*, Auto">
                                         <VerticalStackLayout Grid.Column="0" Spacing="2">
                                             <Label Text="{Binding TenantName}" FontAttributes="Bold" FontSize="15" TextColor="#0F172A" />
-                                            <Label Text="{Binding Method, StringFormat='Method: {0}'}" FontSize="12" TextColor="#64748B" />
+                                            <Label Text="{Binding PaymentMethod, StringFormat='Method: {0}'}" FontSize="12" TextColor="#64748B" />
                                             <Label Text="{Binding PaymentDate, StringFormat='{0:MMM dd, yyyy}'}" FontSize="11" TextColor="#94A3B8" />
                                         </VerticalStackLayout>
 
                                         <Label Grid.Column="1" 
-                                               Text="{Binding Amount, StringFormat='+${0:F2}'}" 
+                                               Text="{Binding AmountPaid, StringFormat='+${0:F2}'}" 
                                                FontAttributes="Bold" 
                                                FontSize="16" 
                                                TextColor="#16A34A" 
@@ -116,6 +138,53 @@
                                             HeightRequest="36" 
                                             CornerRadius="8" />
                                 </VerticalStackLayout>
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </Grid>
+
+            <!-- 4B. Monthly Breakdown View -->
+            <Grid x:Name="BreakdownView" Grid.Row="3" RowDefinitions="Auto, *" Margin="16,8,16,16" IsVisible="False">
+                <Grid Grid.Row="0" ColumnDefinitions="*, Auto" Margin="4,0,0,8">
+                    <Label Text="Monthly Unit Breakdown" FontSize="16" FontAttributes="Bold" TextColor="#0F172A" VerticalOptions="Center"/>
+                    <DatePicker x:Name="MonthPicker" 
+                                Format="MM/yyyy" 
+                                DateSelected="OnMonthSelected" 
+                                Grid.Column="1" />
+                </Grid>
+
+                <CollectionView Grid.Row="1" x:Name="MonthlyBreakdownListView">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="models:UnitMonthlyStatus">
+                            <Border Margin="0,0,0,10" Padding="14" StrokeShape="RoundRectangle 12" StrokeThickness="0" BackgroundColor="White">
+                                <Border.Shadow>
+                                    <Shadow Brush="Black" Offset="0,2" Radius="4" Opacity="0.04" />
+                                </Border.Shadow>
+
+                                <Grid RowDefinitions="Auto, Auto" ColumnDefinitions="*, Auto" RowSpacing="6">
+                                    <!-- Unit Number & Status Badge -->
+                                    <HorizontalStackLayout Grid.Row="0" Grid.Column="0" Spacing="8" VerticalOptions="Center">
+                                        <Label Text="{Binding UnitNumber, StringFormat='Unit {0}'}" FontAttributes="Bold" FontSize="16" TextColor="#0F172A"/>
+                                        <Border BackgroundColor="{Binding StatusColor}" Padding="6,2" StrokeShape="RoundRectangle 4">
+                                            <Label Text="{Binding StatusBadge}" TextColor="White" FontSize="10" FontAttributes="Bold"/>
+                                        </Border>
+                                    </HorizontalStackLayout>
+
+                                    <!-- Amount Paid / Expected -->
+                                    <Label Grid.Row="0" Grid.Column="1" 
+                                           Text="{Binding AmountPaid, StringFormat='${0:F2}'}" 
+                                           FontAttributes="Bold" FontSize="16" TextColor="#16A34A" HorizontalOptions="End"/>
+
+                                    <!-- Details: Tenant, Method, and Date -->
+                                    <VerticalStackLayout Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Spacing="2" Margin="0,4,0,0">
+                                        <Label Text="{Binding TenantName, StringFormat='Tenant: {0}'}" FontSize="13" TextColor="#475569"/>
+                                        <HorizontalStackLayout Spacing="12">
+                                            <Label Text="{Binding PaymentMethod, StringFormat='Method: {0}'}" FontSize="12" TextColor="#64748B"/>
+                                            <Label Text="{Binding PaymentDate, StringFormat='Date: {0:MMM dd, yyyy}'}" FontSize="12" TextColor="#64748B"/>
+                                        </HorizontalStackLayout>
+                                    </VerticalStackLayout>
+                                </Grid>
                             </Border>
                         </DataTemplate>
                     </CollectionView.ItemTemplate>

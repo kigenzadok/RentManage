@@ -43,7 +43,10 @@
 
                     <Label Text="Assign Unit" FontSize="12" FontAttributes="Bold" TextColor="#64748B"/>
                     <Border StrokeShape="RoundRectangle 8" Stroke="#E2E8F0" Padding="10,0" BackgroundColor="#F8FAFC">
-                        <Picker x:Name="VacantUnitsPicker" Title="Select Unit" ItemDisplayBinding="{Binding UnitNumber}" TextColor="#0F172A" />
+                        <Picker x:Name="UnitPicker" 
+                        Title="Select Unit" 
+                        ItemDisplayBinding="{Binding UnitNumber}" 
+                        TextColor="#0F172A" />
                     </Border>
 
                     <Button Text="Register Tenant" Clicked="OnRegisterTenantClicked" Margin="0,4,0,0" />
