@@ -37,4 +37,7 @@ public class Tenant
 
     [Ignore]
     public Color PaymentStatusBgColor => IsRentPaidThisMonth ? Color.FromArgb("#ECFDF5") : Color.FromArgb("#FEF2F2");
+
+    public decimal Balance { get; set; } // Outstanding rent bal
+    public bool IsActive { get; set; } = true;
 }

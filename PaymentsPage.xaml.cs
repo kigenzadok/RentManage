@@ -160,4 +160,54 @@ Thank you for your payment!
         BtnShowTransactions.BackgroundColor = Color.FromArgb("#E2E8F0");
         BtnShowTransactions.TextColor = Color.FromArgb("#475569");
     }
+    private DateTime _selectedBreakdownDate = DateTime.Now;
+
+    private void OnPrevMonthClicked(object sender, EventArgs e)
+    {
+        _selectedBreakdownDate = _selectedBreakdownDate.AddMonths(-1);
+        LoadUnitBreakdown();
+    }
+
+    private void OnNextMonthClicked(object sender, EventArgs e)
+    {
+        _selectedBreakdownDate = _selectedBreakdownDate.AddMonths(1);
+        LoadUnitBreakdown();
+    }
+
+    private async void LoadUnitBreakdown()
+    {
+        SelectedMonthYearLabel.Text = _selectedBreakdownDate.ToString("MM/yyyy");
+
+        var units = await _dbService.GetUnitsAsync();
+        var properties = await _dbService.GetPropertiesAsync();
+        var tenants = await _dbService.GetTenantsAsync();
+        var allPayments = await _dbService.GetPaymentsAsync();
+
+        var breakdownList = new List<UnitBreakdownItem>();
+
+        foreach (var unit in units)
+        {
+            var propertyName = properties.FirstOrDefault(p => p.Id == unit.PropertyId)?.Name ?? "Unknown Property";
+            var activeTenant = tenants.FirstOrDefault(t => t.UnitId == unit.Id && t.IsActive);
+
+            // Sum payments that apply to this specific target month and year (including advance payments)
+            decimal paidForMonth = allPayments
+                .Where(p => p.UnitId == unit.Id &&
+                            ((p.TargetMonth == _selectedBreakdownDate.Month && p.TargetYear == _selectedBreakdownDate.Year) ||
+                             (p.TargetMonth == 0 && p.PaymentDate.Month == _selectedBreakdownDate.Month && p.PaymentDate.Year == _selectedBreakdownDate.Year)))
+                .Sum(p => p.AmountPaid);
+
+            breakdownList.Add(new UnitBreakdownItem
+            {
+                UnitId = unit.Id,
+                UnitNumber = unit.UnitNumber,
+                PropertyName = propertyName,
+                TenantName = activeTenant != null ? $"{activeTenant.FirstName} {activeTenant.LastName}" : "Vacant",
+                MonthlyRent = unit.MonthlyRent,
+                AmountPaid = paidForMonth
+            });
+        }
+
+        UnitBreakdownCollectionView.ItemsSource = breakdownList;
+    }
 }
