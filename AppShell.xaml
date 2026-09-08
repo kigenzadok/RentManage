@@ -25,6 +25,9 @@
         <Tab Title="Payments" Icon="icon_payments.png">
             <ShellContent ContentTemplate="{DataTemplate local:PaymentsPage}" Route="PaymentsPage" />
         </Tab>
+        <Tab Title="Account" Icon="account.png">
+            <ShellContent ContentTemplate="{DataTemplate local:ProfilePage}" Route="ProfilePage" />
+        </Tab>
     </TabBar>
 
 </Shell>

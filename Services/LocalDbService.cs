@@ -19,6 +19,7 @@ public class LocalDbService
         await _dbConnection.CreateTableAsync<Unit>();
         await _dbConnection.CreateTableAsync<Tenant>();
         await _dbConnection.CreateTableAsync<Payment>();
+        await _dbConnection.CreateTableAsync<UserProfile>();
     }
 
     // --- Property Operations ---
@@ -243,5 +244,19 @@ public class LocalDbService
         }
 
         return breakdown;
+    }
+    public async Task<UserProfile?> GetUserProfileAsync()
+    {
+        await InitAsync();
+        return await _dbConnection.Table<UserProfile>().FirstOrDefaultAsync();
+    }
+
+    public async Task<int> SaveUserProfileAsync(UserProfile profile)
+    {
+        await InitAsync();
+        if (profile.Id != 0)
+            return await _dbConnection.UpdateAsync(profile);
+
+        return await _dbConnection.InsertAsync(profile);
     }
 }
