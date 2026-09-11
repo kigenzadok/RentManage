@@ -24,8 +24,7 @@ public class Payment
     public string PaymentMethod { get; set; } = "Cash"; // Cash, M-Pesa, Bank Transfer, Card
 
     public string Notes { get; set; } = string.Empty;
-    [PrimaryKey, AutoIncrement]
-
+    
     public int UnitId { get; set; }
     // Advance / Target billing period properties
     public int TargetMonth { get; set; }

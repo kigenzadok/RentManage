@@ -18,6 +18,8 @@ public class LocalDbService
         await _dbConnection.CreateTableAsync<Property>();
         await _dbConnection.CreateTableAsync<Unit>();
         await _dbConnection.CreateTableAsync<Tenant>();
+        // Temporarily add this line in InitAsync() right before CreateTableAsync:
+        //await _dbConnection.DropTableAsync<Payment>(); // Or UserProfile / Tenant depending on model modified
         await _dbConnection.CreateTableAsync<Payment>();
         await _dbConnection.CreateTableAsync<UserProfile>();
     }
@@ -258,5 +260,48 @@ public class LocalDbService
             return await _dbConnection.UpdateAsync(profile);
 
         return await _dbConnection.InsertAsync(profile);
+    }
+
+    public async Task SavePaymentWithAdvanceAllocationAsync(Payment totalPayment)
+    {
+        await InitAsync();
+
+        // 1. Fetch unit rent details
+        var unit = await _dbConnection.Table<Unit>()
+                                      .FirstOrDefaultAsync(u => u.Id == totalPayment.UnitId);
+
+        // Default to full amount if unit rent isn't set
+        decimal monthlyRent = (unit != null && unit.MonthlyRent > 0) ? unit.MonthlyRent : totalPayment.AmountPaid;
+
+        decimal remainingAmount = totalPayment.AmountPaid;
+
+        // Use selected target month/year, or fall back to payment date
+        int startMonth = totalPayment.TargetMonth > 0 ? totalPayment.TargetMonth : totalPayment.PaymentDate.Month;
+        int startYear = totalPayment.TargetYear > 0 ? totalPayment.TargetYear : totalPayment.PaymentDate.Year;
+
+        DateTime targetPeriod = new DateTime(startYear, startMonth, 1);
+
+        // 2. Loop and split payment across consecutive months
+        while (remainingAmount > 0)
+        {
+            decimal amountForThisMonth = Math.Min(remainingAmount, monthlyRent);
+
+            var splitPayment = new Payment
+            {
+                UnitId = totalPayment.UnitId,
+                TenantId = totalPayment.TenantId,
+                AmountPaid = amountForThisMonth,
+                PaymentDate = totalPayment.PaymentDate,
+                TargetMonth = targetPeriod.Month,
+                TargetYear = targetPeriod.Year,
+                PaymentMethod = totalPayment.PaymentMethod,
+                ReferenceNumber = totalPayment.ReferenceNumber
+            };
+
+            await _dbConnection.InsertAsync(splitPayment);
+
+            remainingAmount -= amountForThisMonth;
+            targetPeriod = targetPeriod.AddMonths(1); // Advance to next month
+        }
     }
 }
