@@ -135,7 +135,7 @@ Thank you for your payment!
     private async Task RefreshMonthlyDataAsync(int year, int month)
     {
         var breakdown = await _dbService.GetMonthlyUnitBreakdownAsync(year, month);
-        MonthlyBreakdownListView.ItemsSource = breakdown;
+        UnitBreakdownCollectionView.ItemsSource = breakdown;
     }
     private void OnShowTransactionsClicked(object sender, EventArgs e)
     {
@@ -202,7 +202,7 @@ Thank you for your payment!
                 UnitId = unit.Id,
                 UnitNumber = unit.UnitNumber,
                 PropertyName = propertyName,
-                TenantName = activeTenant != null ? $"{activeTenant.FirstName} {activeTenant.LastName}" : "Vacant",
+                TenantName = activeTenant != null ? $"{activeTenant.FullName}" : "Vacant",
                 MonthlyRent = unit.MonthlyRent,
                 AmountPaid = paidForMonth
             });
@@ -210,4 +210,5 @@ Thank you for your payment!
 
         UnitBreakdownCollectionView.ItemsSource = breakdownList;
     }
+
 }
